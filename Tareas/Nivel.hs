@@ -75,7 +75,13 @@ splitOn sep (x:xs)
 
 -- Elimina los espacios en blanco al principio y al final de una cadena.
 trim :: String -> String
-trim = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+trim = reverse . trimIzq . reverse . trimIzq
+  where
+    trimIzq [] = []
+    trimIzq (x:xs)
+      | esEspacio x = trimIzq xs
+      | otherwise   = x : xs
+    esEspacio c = c == ' ' || c == '\t' || c == '\n' || c == '\r'
 
 -- Cuenta cuántos elementos de una lista cumplen una condición dada.
 contarSiCumple :: (a -> Bool) -> [a] -> Int
