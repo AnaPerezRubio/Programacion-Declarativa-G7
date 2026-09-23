@@ -1,6 +1,5 @@
 module Nivel where
 
-import Data.Char (isSpace)
 import Test.QuickCheck 
 
 --------------------------------------------------------------------------------
@@ -74,13 +73,10 @@ splitOn sep (x:xs)
     resto = splitOn sep xs
 
 -- Elimina los espacios en blanco al principio y al final de una cadena.
+-- | Elimina los espacios en blanco al principio y al final de una cadena.
 trim :: String -> String
-trim = reverse . trimIzq . reverse . trimIzq
+trim = dropWhile esEspacio . reverse . dropWhile esEspacio . reverse
   where
-    trimIzq [] = []
-    trimIzq (x:xs)
-      | esEspacio x = trimIzq xs
-      | otherwise   = x : xs
     esEspacio c = c == ' ' || c == '\t' || c == '\n' || c == '\r'
 
 -- Cuenta cuántos elementos de una lista cumplen una condición dada.
