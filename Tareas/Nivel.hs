@@ -2,9 +2,9 @@ module Nivel where
 
 import Test.QuickCheck 
 
---------------------------------------------------------------------------------
+-----------------------------------
 -- Declaraciones de tipos sinónimos 
---------------------------------------------------------------------------------
+------------------------------------
 
 type Vector2D = (Double, Double)
 type Caja = (Double, Double, Double, Double) -- (x, y, ancho, alto)
@@ -73,7 +73,6 @@ splitOn sep (x:xs)
     resto = splitOn sep xs
 
 -- Elimina los espacios en blanco al principio y al final de una cadena.
--- | Elimina los espacios en blanco al principio y al final de una cadena.
 trim :: String -> String
 trim = dropWhile esEspacio . reverse . dropWhile esEspacio . reverse
   where
@@ -92,6 +91,7 @@ list2Vector2D []      = error "Lista vacia, no es posible convertir en Vector2D"
 -----------------------
 -- 5. Parseo del nivel
 -----------------------
+
 -- Convierte la lista de líneas de texto en la estructura de datos que representa el nivel.
 parsearNivel :: [String] -> Nivel
 parsearNivel = id
