@@ -1,165 +1,202 @@
--- 1. VECTORES 2D 
+--------------------------------------------
+--	TAREA 1
+-- 	GRUPO 7 	PROGRAMACIÓN DECLARATIVA
+--------------------------------------------
 
 import Test.QuickCheck 
 
+-- TIPOS SINÓNIMOS
 
--- Tipos sinónimos
-type Punto = (Double, Double)
-
--- sumaVectores: calcula la suma de dos vectores componente a componente
-sumaVectores :: Punto -> Punto -> Punto
-sumaVectores x y = (fst x + fst y, snd x + snd y)
-
--- escalarVector: multiplica un vector por un escalar
-escalarVector :: Double -> Punto -> Punto
-escalarVector x p = (x*(fst p), x* (snd p))
-
--- distancia: calcula la distancia euclídea entre dos puntos
-distancia :: Punto -> Punto -> Double
-distancia (x1,y1) (x2,y2) = sqrt ((x1-x2)^2 + (y1-y2)^2)
-
--- 2. CAJAS DE COLISIÓN
-
--- Tipo sinonimo
+type Vector2 = (Double, Double)
 type Caja = (Double, Double, Double, Double)
+type Celda = Char
+type Fila = [Celda]
+type Grid = [Fila]
+type Posicion = (Int, Int)
+type Enemigo = (Int, Int, Char)
 
--- Voy a considerar que la posición dará la esquina inferior izquierda.
--- Dos cajas NO se solapan (teniendo en cuenta los límites) si:
--- x2 >= x1 +b1 o
--- x2 + b2 <= x1 o
--- y2 >= y1 +h1
--- y2 + h2 <= y1
--- La condición de que SI se solapen se obtiene negando la anterior y aplicando leyes de morgan.
+--------------------------------------------
+
+-- VECTORES EN 2D
+
+-- Función: sumaVectores
+-- Suma componente a componente dos vectores/puntos 2D
+sumaVectores :: Vector2 -> Vector2 -> Vector2
+sumaVectores (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+
+
+-- Función: escalarVector
+-- Multiplica un vector/punto 2D por un factor escalar
+escalarVector :: Double -> Vector2 -> Vector2
+escalarVector k (x, y) = (k * x, k * y)
+
+
+-- Función: distancia
+-- Calcula la distancia euclídea entre dos vectores 2D
+distancia :: Vector2 -> Vector2 -> Double
+distancia (x1, y1) (x2, y2) = sqrt (dx^2 + dy^2)
+  where
+    dx = x2 - x1
+    dy = y2 - y1
+
+--------------------------------------------
+
+-- CAJAS DE COLISIÓN
+
+-- Función: solapan
+-- Indica si dos cajas delimitadoras solapan (colisionan)
 solapan :: Caja -> Caja -> Bool
-solapan (x1,y1,b1,h1) (x2,y2,b2,h2) = (x2 < x1+b1) && (x2+b2 > x1) && (y2 < y1+h1) && (y2+h2 > y1)
+solapan (x1, y1, anc1, alt1) (x2, y2, anc2, alt2) = solapanX && solapanY
+  where
+    solapanX = x1 < x2 + anc2 && x1 + anc1 > x2
+    solapanY = y1 < y2 + alt2 && y1 + alt1 > y2
 
--- 3. LADO DE COLISIÓN
+--------------------------------------------
 
--- ladoColision: dadas dos cajas que colisionan, 
--- devuelve el lado por el que se produce el contacto (el de menor solape)
+-- SOLAPAMIENTO DE CAJAS
+
+-- Función: ladoColision
+-- Dadas dos cajas que colisionan, devuelve el lado por el que se produce el contacto.
 ladoColision :: Caja -> Caja -> String
 ladoColision (x1,y1,b1,h1) (x2,y2,b2,h2)
--- | not (solapan (x1,y1,b1,h1) (x2,y2,b2,h2)) = error ">> ladoColision: Las dos cajas introducidas no solapan."
  | choqueIzq == solapaMinimo = "Izquierda"
  | choqueDch == solapaMinimo = "Derecha"
  | choqueArr == solapaMinimo = "Arriba"
- | choqueAbj == solapaMinimo = "Abajo"
+ | otherwise = "Abajo"
  where choqueIzq = x1+b2 - x2
        choqueDch = x2+b2 - x1
        choqueArr = y2+h2 - y1
        choqueAbj = y1+h1 - y2
        solapaMinimo = minimum [choqueIzq, choqueDch, choqueArr, choqueAbj]
 
--- 4. UTILIDADES DE LISTAS Y CADENAS
+--------------------------------------------
 
--- splitOn: divide una cadena en trozos cada vez que aparece un separador dado.
+-- UTILIDADES DE LISTAS Y CADENAS
+
+-- Función: splitOn
+-- Divide una cadena en trozos cada vez que aparece un carácter separador dado
 splitOn :: Char -> String -> [String]
 splitOn _ [] = [""]
-splitOn s (x:xs) 
- | x /= s = (x:(head pasoRecursivo)):(tail pasoRecursivo)
- | x == s = "":pasoRecursivo
- where pasoRecursivo = splitOn s xs
+splitOn sep (x:xs)
+    | x == sep  = "" : resto
+    | otherwise = (x : head resto) : tail resto
+  where
+    resto = splitOn sep xs
 
--- trim: elimina espacios en blanco al principio y final de una cadena
+
+-- Función: trim
+-- Elimina los espacios en blanco (espacios, tabuladores, saltos de línea)
+-- al principio y al final de una cadena
 trim :: String -> String
-trim s = (reverse. limpiaYPara. reverse. limpiaYPara) s
+trim = reverse. limpiaYPara. reverse. limpiaYPara
+ where esBlanco :: Char -> Bool
+       esBlanco x = x == ' ' || x == '\t' || x == '\n' 
+       limpiaYPara :: String -> String
+       limpiaYPara [] = []
+       limpiaYPara original@(x:xs)
+        | esBlanco x = limpiaYPara xs
+        | otherwise = original
 
--- limpiaYPara: función auxiliar que elimina espacios blanco hasta encontrar un carácter y para.
-limpiaYPara :: String -> String
-limpiaYPara [] = []
-limpiaYPara (x:xs)
- | x == ' ' = limpiaYPara xs
- | x == '\t' = limpiaYPara xs
- | x == '\n' = limpiaYPara xs
- | otherwise = original
- where original = x:xs
 
--- contarSiCumple: cuenta cuantos elementos de una lista cumplen una condicion dadas
+-- Función: contarSiCumple
+-- Cuenta cuántos elementos de una lista cumplen una condición dada
 contarSiCumple :: (a -> Bool) -> [a] -> Int
-contarSiCumple f ls = length [a | a <- ls, f a]
+contarSiCumple p xs = length [x | x <- xs, p x]
 
--- list2Vector2: convierte una lista de dos o más números en un Punto.
--- Lanza error si la lista no tiene al menos dos elementos.
-list2Vector2 :: [Double] -> Punto
-list2Vector2 [] = error ">> list2Vector2: La lista de entrada no puede estar vacía."
-list2Vector2 [x] = error ">> list2Vector2: La lista de entrada debe tener al menos dos elementos."
+
+-- Función: list2Vector2
+-- Convierte una lista de dos (o más) números en un vector/punto 2D;
+-- lanza un error si la lista no tiene al menos dos elementos
+list2Vector2 :: [Double] -> Vector2
 list2Vector2 (x:y:_) = (x, y)
+list2Vector2 [_]     = error "Falta un elemento en la lista para convertir en Vector2"
+list2Vector2 []      = error "Lista vacia, no es posible convertir en Vector2"
 
--- 5. PARSEO DEL NIVEL
+--------------------------------------------
 
--- Tipos sinónimos para celda y nivel (grid)
-type Celda = Char
-type Grid = [[Celda]]
+-- PARSEO DEL NIVEL
 
--- parsearNivel: convierte una lista de lineas de texto en un Grid.
+-- Función: parsearNivel
+-- Convierte la lista de líneas de texto leídas de un fichero de nivel 
+-- en la estructura de datos que representa el nivel completo
 parsearNivel :: [String] -> Grid
-parsearNivel xs = xs
+parsearNivel = id
 
--- esSolido: indica si una celda es una plataforma sólida.
+
+-- Función: esSolido
+-- Indica si una celda es una plataforma sólida
 esSolido :: Celda -> Bool
 esSolido '#' = True
 esSolido _ = False
 
--- esMeta: indica si una celda es la meta del nivel.
+
+-- Función: esMeta
+-- Indica si una celda es la meta del nivel
 esMeta :: Celda -> Bool
 esMeta 'M' = True
 esMeta _ = False
 
--- esVacio: indica si una celda está vacía.
+
+-- Función: esVacio
+-- Indica si una celda está vacía (no hay nada en ella)
 esVacio :: Celda -> Bool
 esVacio '.' = True
 esVacio _ = False
 
--- esEnemigo: indica si una celda marca el inicio de un enemigo.
+
+-- Función: esEnemigo
+-- Indica si una celda marca el punto de inicio de un enemigo
+-- (cualquier carácter que no sea sólido, meta ni vacío)
 esEnemigo :: Celda -> Bool
 esEnemigo c = not (esSolido c || esVacio c || esMeta c)
 
--- posicionesMeta: dado el nivel completo, devuelve las posiciones (fila, columna) en las que aparece la meta
-posicionesMeta :: Grid -> [(Int,Int)]
-posicionesMeta nivel = 
- [(fila, columna) | 
-        (fila, celdas) <- nivelPorFilas, (columna, celda) <- (zip [0..] celdas),
-        esMeta celda]
- where nivelPorFilas = zip [0..] nivel
 
--- posicionesEnemigos (analoga extrayendo el identificador): dado el nivel completo, devuelve la lista de posiciones y el identificador de cada enemigo en formato (fila, columna, id)
-posicionesEnemigos :: Grid -> [(Int,Int,String)]
-posicionesEnemigos nivel =
- [(fila, col, [celda]) | (fila, celdas) <- nivelPorFilas,
-                    (col, celda) <- (zip [0..] celdas),
-                    esEnemigo celda]
- where nivelPorFilas = zip [0..] nivel
-
--- agruparRachas (span / recursión con acumulador de indice y manejo correcto de rachas al final de la fila o filas sin solidos): recorre una fila del nivel y agrupa las columnas '#' consecutivas en pares (inicio, longitud)
-agruparRachas :: [Celda] -> [(Int, Int)]
-agruparRachas celdas = buscarSolido celdas 0 0
- where 
-    buscarSolido :: [Celda] -> Int -> Int -> [(Int, Int)]
-    buscarSolido [] ini long 
-    -- No habia racha previa
-     | long == 0 = []
-    -- Habia racha, la añadimos
-     | otherwise = [((ini-long), long)]
-    buscarSolido (c:cs) ini long
-     -- Caso 1: no es solido y no estaba contando antes
-     | (not. esSolido) c && (long == 0) = buscarSolido cs (ini+1) long
-     -- Caso 2: es solido --> inicia racha o mantenla
-     | esSolido c = buscarSolido cs (ini+1) (long+1)
-     -- Caso 3: acaba la racha --> añadir
-     | (not. esSolido) c && (long /=0 ) = ((ini - long), long):buscarSolido cs (ini+1) 0
+-- Función: posicionesMeta
+-- Dado el nivel completo, devuelve la lista de posiciones (fila, columna)
+-- en las que aparece la meta
+posicionesMeta :: Grid -> [Posicion]
+posicionesMeta grid =
+  [ (r, c) | (r, fila) <- zip [0..] grid
+           , (c, celda) <- zip [0..] fila
+           , esMeta celda ]
 
 
--- BONUS: QUICKCHECK
+-- Función: posicionesEnemigos
+-- Dado el nivel completo, devuelve la lista de posiciones y el identificador
+-- de cada enemigo (fila, columna, identificador)
+posicionesEnemigos :: Grid -> [Enemigo]
+posicionesEnemigos grid =
+  [ (r, c, celda) | (r, fila) <- zip [0..] grid
+                  , (c, celda) <- zip [0..] fila
+                  , esEnemigo celda ]
+
+
+-- Función: agruparRachas
+-- Recorre una fila del nivel y agrupa las columnas '#' consecutivas
+-- en pares (columna de inicio, longitud de la racha)
+agruparRachas :: Fila -> [(Int, Int)]                    
+agruparRachas fila = medirRacha 0 fila 
+  where
+    medirRacha _ "" = []      
+    medirRacha indice cadena@(c:cs)
+        | esSolido c = (indice, length racha) : medirRacha (indice + length racha) resto 
+        | otherwise  = medirRacha (indice + 1) cs
+      where 
+        (racha, resto) = span esSolido cadena
+
+--------------------------------------------
+
+-- PROPIEDADES CON QUICKCHECK
 
 -- La suma de vectores es conmutativa
-prop_suma_conmutativa :: Punto -> Punto -> Bool
+prop_suma_conmutativa :: Vector2 -> Vector2 -> Bool
 prop_suma_conmutativa a b = sumaVectores a b == sumaVectores b a
 
 -- quickCheck prop_suma_conmutativa
 -- +++ OK, passed 100 tests.
 
 -- La suma de vectores es asociativa
-prop_suma_asociativa :: Punto -> Punto -> Punto -> Bool
+prop_suma_asociativa :: Vector2 -> Vector2 -> Vector2 -> Bool
 prop_suma_asociativa a b c = sumaVectores suma1 c == sumaVectores a suma2
  where suma1 = sumaVectores a b
        suma2 = sumaVectores b c
@@ -173,14 +210,14 @@ prop_suma_asociativa a b c = sumaVectores suma1 c == sumaVectores a suma2
 -- esta comprobación por errores de redondeo en el tipo Double.
 
 -- La distancia siempre es no negativa
-prop_distancia_no_negativa :: Punto -> Punto -> Bool
+prop_distancia_no_negativa :: Vector2 -> Vector2 -> Bool
 prop_distancia_no_negativa a b = distancia a b >= 0
 
 -- *Main> quickCheck prop_distancia_no_negativa
 -- +++ OK, passed 100 tests.
 
 -- La distancia es simétrica
-prop_distancia_simetrica :: Punto -> Punto -> Bool
+prop_distancia_simetrica :: Vector2 -> Vector2 -> Bool
 prop_distancia_simetrica a b = distancia a b == distancia b a
 
 -- *Main> quickCheck prop_distancia_simetrica
@@ -209,9 +246,11 @@ prop_splitOn_sin_separador x xs = notElem x xs ==> splitOn x xs == [xs]
 
 -- contarSiCumple nunca es mayor que la longitud de la lista
 -- En vez de usar un tipo 'a' genérico, concretaremos con Int para que genere los Test
--- En vez de usar una función a->Bool genérica, usaremos la funcion odd.
+-- En vez de usar una función a -> Bool genérica, usaremos la funcion odd.
 prop_contarSiCumple_acotado :: [Int] -> Bool
 prop_contarSiCumple_acotado ls = contarSiCumple odd ls <= length ls
 
 -- *Main> quickCheck prop_contarSiCumple_acotado
 -- +++ OK, passed 100 tests.
+
+---------------------------------------------
