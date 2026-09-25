@@ -63,7 +63,7 @@ ladoColision (x1,y1,b1,h1) (x2,y2,b2,h2)
  | choqueDch == solapaMinimo = "Derecha"
  | choqueArr == solapaMinimo = "Arriba"
  | otherwise = "Abajo"
- where choqueIzq = x1+b2 - x2
+ where choqueIzq = x1+b1 - x2
        choqueDch = x2+b2 - x1
        choqueArr = y2+h2 - y1
        choqueAbj = y1+h1 - y2
