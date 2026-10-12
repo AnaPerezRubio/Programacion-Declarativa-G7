@@ -2,6 +2,7 @@
 
 -- import de quickcheck
 import Test.QuickCheck
+import Data.Fixed (HasResolution(resolution))
 
 -- tipos sinonimos
 
@@ -151,3 +152,153 @@ prop_distancia_simetrica a b = distancia a b == distancia b a
 -- Funcion que verifica si usar trim dos veces es la misma cosa que usarla una sola vez 
 prop_trim_idempotente :: String -> Bool
 prop_trim_idempotente s = trim (trim s) == trim s
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+-- Tarea 2
+
+-- Funcion que devuelve (fila, columna) de la meta mediante recursion
+posicionesMetaRec :: Grid -> [(Int, Int)]
+posicionesMetaRec grid = recorrerFilas 0 grid
+    where
+        recorrerFilas :: Int -> Grid -> [(Int, Int)]
+        recorrerFilas _ [] = []
+        recorrerFilas x (linea:resto) = recorrerClmn x 0 linea ++ recorrerFilas (x + 1) resto
+
+        recorrerClmn :: Int -> Int -> String -> [(Int, Int)]
+        recorrerClmn _ _ [] = []
+        recorrerClmn x y (celda:resto)
+            | esMeta celda = (x,y) : recorrerClmn x (y + 1) resto
+            | otherwise = recorrerClmn x (y + 1) resto
+
+
+-- Funcion que devuelve (fila, columna, caracter) de enemigos mediante recursion
+posicionesEnemigosRec :: Grid -> [(Int, Int, Char)]
+posicionesEnemigosRec grid = recorrerFilas 0 grid 
+    where
+        recorrerFilas :: Int -> Grid -> [(Int,Int,Char)]
+        recorrerFilas _ [] = []
+        recorrerFilas x (linea:resto) = recorrerClmn x 0 linea ++ recorrerFilas (x + 1) resto
+
+        recorrerClmn :: Int -> Int -> String -> [(Int,Int,Char)]
+        recorrerClmn _ _ [] = []
+        recorrerClmn x y (celda:resto)
+            | esEnemigo celda = (x, y, celda) : recorrerClmn x (y + 1) resto
+            | otherwise = recorrerClmn x (y + 1) resto
+
+-- Funcion que recorre una fila y agrupa en trios (y, longitud, caracter) las rachas consecutivas
+agruparPorCaracter :: String -> [(Int, Int, Char)]
+agruparPorCaracter fila = aux 0 fila
+  where
+    aux :: Int -> String -> [(Int, Int, Char)]
+    aux _ [] = []
+    aux y (c:cs) = (y, len, c) : aux (y + len) resto
+      where
+        (len, resto) = contarIguales 1 c cs
+
+    contarIguales :: Int -> Char -> String -> (Int, String)
+    contarIguales n _ [] = (n, [])
+    contarIguales n c (x:xs)
+      | c == x    = contarIguales (n + 1) c xs
+      | otherwise = (n, x:xs)
+
+-- Funcion que calcula la lista de estados (posición x, velocidad v) en caída libre
+simularCaidaLibre :: Int -> Double -> (Double, Double) -> [(Double, Double)]
+simularCaidaLibre n g estadoInicial
+  | n <= 0    = [estadoInicial]
+  | otherwise = estadoInicial : simularCaidaLibre (n - 1) g (pasoCaida estadoInicial)
+  where
+    -- Funcion auxiliar  para calcular el estado siguiente tras un paso de simulacion
+    pasoCaida :: (Double, Double) -> (Double, Double)
+    pasoCaida (x, v) = (x + v, v + g)
+
+-- Funcion que empareja los elementos de dos listas hasta que una de las dos se agota
+zipPropio :: [a] -> [b] -> [(a, b)]
+zipPropio [] _          = []
+zipPropio _ []          = []
+zipPropio (x:xs) (y:ys) = (x, y) : zipPropio xs ys
+
+ -- Funcion que comprueba si una linea recortada es vacia o empieza por comentario
+esComentarioOVacia :: String -> Bool
+esComentarioOVacia s = null s' || head s' == ';'
+  where
+    s' = trim s
+
+-- Funcion que limpia una lista de lineas recortando espacios y descartando lineas vacias o comentarios
+prepararLineas :: [String] -> [String]
+prepararLineas [] = []
+prepararLineas (linea:resto)
+  | esComentarioOVacia lineaLimpia = prepararLineas resto
+  | otherwise                      = lineaLimpia : prepararLineas resto
+  where
+    lineaLimpia = trim linea
+
+-- Funcion que aplica una funcion a cada elemento de una lista manteniendo el orden
+mapPropio :: (a -> b) -> [a] -> [b]
+mapPropio _ []     = []
+mapPropio f (x:xs) = f x : mapPropio f xs
+
+-- Funcion que filtra los elementos de una lista que cumplen una condicion dada
+filterPropio :: (a -> Bool) -> [a] -> [a]
+filterPropio _ []     = []
+filterPropio p (x:xs)
+  | p x       = x : filterPropio p xs
+  | otherwise = filterPropio p xs
+
+-- Funcion que plega por la derecha: combina elementos de derecha a izquierda
+foldrPropio :: (a -> b -> b) -> b -> [a] -> b
+foldrPropio _ v []     = v
+foldrPropio f v (x:xs) = f x (foldrPropio f v xs)
+
+-- Funcion que plega por la izquierda: combina elementos de izquierda a derecha acumulando el resultado
+foldlPropio :: (a -> b -> a) -> a -> [b] -> a
+foldlPropio _ v []     = v
+foldlPropio f v (x:xs) = foldlPropio f (f v x) xs
+
+-- Se utiliza foldr porque el operador lógico (||) permite la evaluación perezosa. Como se detecta una colision con algun obstaculo foldr devuelve True, sin necesidad de evaluar el resto de la lista
+hayColisionConAlguna :: Caja -> [Caja] -> Bool
+hayColisionConAlguna cajaJugador obstaculos = foldr colisionaConCaja False obstaculos
+  where
+    colisionaConCaja obs acc = solapan cajaJugador obs || acc
+
+-- Se utiliza foldl porque necesitamos contar y recorrer todas las celdas del nivel, ya que no se puede terminar antes de tiempo
+contarCeldasQueCumplen :: (Celda -> Bool) -> Grid -> Int
+contarCeldasQueCumplen cond grid = foldl contarFila 0 grid
+  where
+    contarFila acc fila = foldl contarCelda acc fila
+    contarCelda acc' celda
+      | cond celda = acc' + 1
+      | otherwise  = acc'
+
+-- FUNCIONES DE TEST POR QUICKTEST
+
+-- Funcion que comprueba si la funcion mapPropio equivale a la funcion map normal
+prop_mapPropio_equivale_map :: (Int -> Int) -> [Int] -> Bool
+prop_mapPropio_equivale_map f xs = mapPropio f xs == map f xs
+
+-- Funcion que comprueba si la funcion filterPropio equivale a la funcion filter normal
+prop_filterPropio_equivale_filter :: (Int -> Bool) -> [Int] -> Bool
+prop_filterPropio_equivale_filter p xs = filterPropio p xs == filter p xs
+
+-- Funcion que comprueba si la funcion foldrPropio equivale a la funcion foldr normal
+prop_foldrPropio_equivale_foldr :: (Int -> Int -> Int) -> Int -> [Int] -> Bool
+prop_foldrPropio_equivale_foldr f v xs = foldrPropio f v xs == foldr f v xs
+
+-- Funcion que comprueba si la funcion foldlPropio equivale a la funcion foldl normal
+prop_foldlPropio_equivale_foldl :: (Int -> Int -> Int) -> Int -> [Int] -> Bool
+prop_foldlPropio_equivale_foldl f v xs = foldlPropio f v xs == foldl f v xs
+
+-- Funcion que comprueba si la funcion zipProprio equivale a la funcion zip normal
+prop_zipPropio_equivale_zip :: [Int] -> [String] -> Bool
+prop_zipPropio_equivale_zip xs ys = zipPropio xs ys == zip xs ys
+
+-- Funcion que comprueba si la simulacion de caida libre genera exactamente n + 1 estados para n pasos.
+prop_simularCaidaLibre_longitud :: Int -> Double -> (Double, Double) -> Property
+prop_simularCaidaLibre_longitud n g estado =
+  n >= 0 ==> length (simularCaidaLibre n g estado) == n + 1
+
+-- Funcion que comprueba si no existe colision cuando la lista de obstaculos esta vacia.
+prop_hayColisionConAlguna_lista_vacia :: Caja -> Bool
+prop_hayColisionConAlguna_lista_vacia caja = not (hayColisionConAlguna caja [])
