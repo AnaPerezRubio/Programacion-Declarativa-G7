@@ -1,7 +1,8 @@
 module Nivel where
 
 import Test.QuickCheck 
-
+-----------------------------------
+-- TAREA 1
 -----------------------------------
 -- Declaraciones de tipos sinónimos 
 ------------------------------------
@@ -182,3 +183,152 @@ prop_split0n_sin_separador sep s = notElem sep s ==> splitOn sep s == [s]
 -- Propiedad 9: contarSiCumple nunca devuelve una cantidad superior a la longitud de la lista
 prop_contarSiCumple_acotado :: String -> Bool
 prop_contarSiCumple_acotado xs = contarSiCumple (== 'a') xs <= length xs
+
+
+-------------------------------------------------------
+-- TAREA 2
+-------------------------------------------------------
+
+---------------------------------
+-- Bloque 1:Recursión
+---------------------------------
+-- Reimplementación recursiva
+---------------------------------
+
+posicionesMetaRec :: Nivel -> [Posicion]
+posicionesMetaRec tablero = recorrerFilas 0 tablero
+  where recorrerFilas _ [] = []
+        recorrerFilas r (fila:filas) = recorrerColumnas r 0 fila ++ recorrerFilas (r + 1) filas
+        recorrerColumnas _ _ [] = []
+        recorrerColumnas r c (celda:celdas)
+           | esMeta celda = (r,c) : recorrerColumnas r (c + 1) celdas
+           | otherwise    = recorrerColumnas r (c + 1) celdas
+
+posicionesEnemigosRec :: Nivel -> [Enemigo]
+posicionesEnemigosRec tablero = recorrerFilas 0 tablero
+  where recorrerFilas _ [] = []
+        recorrerFilas r (fila:filas) = recorrerColumnas r 0 fila ++ recorrerFilas (r + 1) filas
+        recorrerColumnas _ _ [] = []
+        recorrerColumnas r c (celda:celdas)
+           | esEnemigo celda = (r,c, celda) : recorrerColumnas r (c + 1) celdas
+           | otherwise    = recorrerColumnas r (c + 1) celdas
+
+-------------------------------------------------
+-- Generalización por recursión de agruparRachas
+-------------------------------------------------
+
+agruparPorCaracter:: Fila -> [(Int, Int, Char)]
+agruparPorCaracter [] = []
+agruparPorCaracter (x:xs) = agruparRacha 0 x 1 xs
+   where agruparRacha pos caracter len [] = [(pos, len, caracter)]
+         agruparRacha pos caracter len (y:ys)
+             | caracter == y   = agruparRacha pos caracter (len + 1) ys
+             | otherwise       = (pos, len, caracter) : agruparRacha (pos + len) y 1 ys
+
+------------------------------------------------
+-- Recursión numérica: simulación de movimiento
+------------------------------------------------
+
+simularCaidaLibre :: Int -> Double -> (Double, Double) -> [(Double, Double)]
+simularCaidaLibre 0 _ estado = [estado]
+simularCaidaLibre n aceleracion estado = estado : simularCaidaLibre (n - 1) aceleracion (siguientePaso aceleracion estado)
+    where siguientePaso aceleracion (pos, velocidad) = (pos + velocidad, velocidad + aceleracion)
+
+--------------------------------------
+-- Recursión sobre dos listas a la vez
+--------------------------------------
+
+zipPropio :: [a] -> [b] -> [(a,b)]
+zipPropio _ [] = []
+zipPropio [] _ = []
+zipPropio (x:xs) (y:ys) = (x,y) : zipPropio xs ys
+
+--------------------------------------------------------------
+-- Recursión con descarte condicional: preparación de líneas
+--------------------------------------------------------------
+
+esComentarioOVacia :: String -> Bool
+esComentarioOVacia cadena = null cadena || head cadena == ';'  
+
+prepararLineas :: [String] -> [String]
+prepararLineas [] = []
+prepararLineas (x:xs)
+  | esComentarioOVacia lineaLimpia = prepararLineas xs
+  | otherwise                      = lineaLimpia : prepararLineas xs
+  where lineaLimpia = trim x
+
+----------------------------------------
+-- Bloque 2: Funciones de Orden Superior
+----------------------------------------
+
+--------------------------------------------------------------
+-- mapPropio y filterPropio
+--------------------------------------------------------------
+
+mapPropio :: (a -> b) -> [a] -> [b]
+mapPropio _ [] = []
+mapPropio f (x:xs) = f x : mapPropio f xs
+
+filterPropio :: (a -> Bool) -> [a] -> [a]
+filterPropio _ [] = []
+filterPropio p (x:xs)
+   | p x       = x : filterPropio p xs
+   | otherwise = filterPropio p xs
+
+--------------------------------------------------------------
+-- foldrPropio y foldlPropio
+--------------------------------------------------------------
+
+foldrPropio :: (a -> b -> b) -> b -> [a] -> b
+foldrPropio _ z [] = z
+foldrPropio f z (x:xs) = f x (foldrPropio f z xs) 
+
+foldlPropio :: (b -> a -> b) -> b -> [a] -> b
+foldlPropio _ ac [] = ac
+foldPropio f ac (x:xs) = foldlPropio f (f ac x) xs
+
+--------------------------------------------------------------
+-- Aplicación de foldr y foldl
+--------------------------------------------------------------
+
+hayColisionConAlguna :: Caja -> [Caja] -> Bool
+hayColisionConAlguna caja obstaculos = foldr (\obstaculo resto -> solapan caja obstaculo || resto) 
+                                             False 
+                                             obstaculos
+
+-- Usamos foldr y no foldl porque cuando usamos el operador (||), 
+-- si el resultado de la izquierda es True, no se evalúa la parte derecha 
+-- evitando así comprobaciones innecesarias.
+
+contarCeldasQueCumplen:: (Char -> Bool) -> [String] -> Int
+contarCeldasQueCumplen condicion filas = foldl (\total fila -> total + foldl (\n celda -> if condicion celda then n + 1 else n) 0 fila) 0 filas
+
+-- Empleamos foldl porque vamos acumulando un número. Primero contamos las celdas de una fila 
+-- y sumamos ese resultado al total acumulado. No hace falta detener el recorrido antes de tiempo
+-- ya que necesitamos contar todas las celdas.
+
+--------------------------------------------------------------
+-- Propiedades con quickCheck
+--------------------------------------------------------------
+
+prop_mapPropio_equivale_map :: [Int] -> Bool
+prop_mapPropio_equivale_map xs =mapPropio (*2) xs == map (*2) xs
+
+prop_filterPropio_equivale_filter:: [Int] -> Bool 
+prop_filterPropio_equivale_filter xs = filterPropio even xs == filter even xs
+
+prop_foldrPropio_equivale_foldr :: [Int] -> Bool
+prop_foldrPropio_equivale_foldr xs = foldrPropio (+) 0 xs == foldr (+) 0 xs
+
+prop_foldlPropio_equivale_foldl:: [Int] -> Bool
+prop_foldlPropio_equivale_foldl xs = foldlPropio (+) 0 xs == foldl (+) 0 xs
+
+prop_zipPropio_equivale_zip :: [Int] -> [Char] -> Bool
+prop_zipPropio_equivale_zip xs ys =zipPropio xs ys == zip xs ys
+
+prop_simularCaidaLibre_longitud :: Int -> Double -> (Double, Double) -> Property
+prop_simularCaidaLibre_longitud n aceleracion estado = n >= 0 ==> 
+                                                      length (simularCaidaLibre n aceleracion estado) == n + 1
+
+prop_hayColisionConAlgunaListaVacia :: Caja -> Bool
+prop_hayColisionConAlgunaListaVacia caja = hayColisionConAlguna caja [] == False
