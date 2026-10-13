@@ -195,6 +195,7 @@ prop_contarSiCumple_acotado xs = contarSiCumple (== 'a') xs <= length xs
 -- Reimplementación recursiva
 ---------------------------------
 
+-- Recorre el nivel y devuelve las posiciones de todas las celdas Meta.
 posicionesMetaRec :: Nivel -> [Posicion]
 posicionesMetaRec tablero = recorrerFilas 0 tablero
   where recorrerFilas _ [] = []
@@ -204,6 +205,7 @@ posicionesMetaRec tablero = recorrerFilas 0 tablero
            | esMeta celda = (r,c) : recorrerColumnas r (c + 1) celdas
            | otherwise    = recorrerColumnas r (c + 1) celdas
 
+-- Recorre el nivel y devuelve la posición y el contenido de todas las celdas Enemigo.
 posicionesEnemigosRec :: Nivel -> [Enemigo]
 posicionesEnemigosRec tablero = recorrerFilas 0 tablero
   where recorrerFilas _ [] = []
@@ -217,6 +219,7 @@ posicionesEnemigosRec tablero = recorrerFilas 0 tablero
 -- Generalización por recursión de agruparRachas
 -------------------------------------------------
 
+-- Agrupa los caracteres consecutivos iguales indicando la posición inicial, la longitud y el carácter.
 agruparPorCaracter:: Fila -> [(Int, Int, Char)]
 agruparPorCaracter [] = []
 agruparPorCaracter (x:xs) = agruparRacha 0 x 1 xs
@@ -229,6 +232,7 @@ agruparPorCaracter (x:xs) = agruparRacha 0 x 1 xs
 -- Recursión numérica: simulación de movimiento
 ------------------------------------------------
 
+-- Simula la caída de un objeto calculando su posición y velocidad durante n pasos.
 simularCaidaLibre :: Int -> Double -> (Double, Double) -> [(Double, Double)]
 simularCaidaLibre 0 _ estado = [estado]
 simularCaidaLibre n aceleracion estado = estado : simularCaidaLibre (n - 1) aceleracion (siguientePaso aceleracion estado)
@@ -250,6 +254,7 @@ zipPropio (x:xs) (y:ys) = (x,y) : zipPropio xs ys
 esComentarioOVacia :: String -> Bool
 esComentarioOVacia cadena = null cadena || head cadena == ';'  
 
+-- Elimina los espacios sobrantes de las líneas y descarta las vacías y los comentarios.
 prepararLineas :: [String] -> [String]
 prepararLineas [] = []
 prepararLineas (x:xs)
@@ -264,7 +269,7 @@ prepararLineas (x:xs)
 --------------------------------------------------------------
 -- mapPropio y filterPropio
 --------------------------------------------------------------
-
+-- Aplica una función a todos los elementos de una lista y devuelve los resultados.
 mapPropio :: (a -> b) -> [a] -> [b]
 mapPropio _ [] = []
 mapPropio f (x:xs) = f x : mapPropio f xs
@@ -279,18 +284,21 @@ filterPropio p (x:xs)
 -- foldrPropio y foldlPropio
 --------------------------------------------------------------
 
+-- Combina los elementos de una lista de derecha a izquierda mediante una función y un valor inicial.
 foldrPropio :: (a -> b -> b) -> b -> [a] -> b
 foldrPropio _ z [] = z
 foldrPropio f z (x:xs) = f x (foldrPropio f z xs) 
 
+-- Combina los elementos de una lista de izquierda a derecha utilizando un acumulador.
 foldlPropio :: (b -> a -> b) -> b -> [a] -> b
 foldlPropio _ ac [] = ac
-foldPropio f ac (x:xs) = foldlPropio f (f ac x) xs
+foldlPropio f ac (x:xs) = foldlPropio f (f ac x) xs
 
 --------------------------------------------------------------
 -- Aplicación de foldr y foldl
 --------------------------------------------------------------
 
+-- Comprueba si una caja solapa con al menos uno de los obstáculos.
 hayColisionConAlguna :: Caja -> [Caja] -> Bool
 hayColisionConAlguna caja obstaculos = foldr (\obstaculo resto -> solapan caja obstaculo || resto) 
                                              False 
@@ -300,6 +308,7 @@ hayColisionConAlguna caja obstaculos = foldr (\obstaculo resto -> solapan caja o
 -- si el resultado de la izquierda es True, no se evalúa la parte derecha 
 -- evitando así comprobaciones innecesarias.
 
+-- Cuenta cuántas celdas de todas las filas cumplen una condición.
 contarCeldasQueCumplen:: (Char -> Bool) -> [String] -> Int
 contarCeldasQueCumplen condicion filas = foldl (\total fila -> total + foldl (\n celda -> if condicion celda then n + 1 else n) 0 fila) 0 filas
 
