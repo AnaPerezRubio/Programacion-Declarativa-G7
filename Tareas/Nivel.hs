@@ -303,17 +303,26 @@ foldlPropio f ac (x:xs) = foldlPropio f (f ac x) xs
 
 -- Comprueba si una caja solapa con al menos uno de los obstáculos.
 hayColisionConAlguna :: Caja -> [Caja] -> Bool
-hayColisionConAlguna caja obstaculos = foldr (\obstaculo resto -> solapan caja obstaculo || resto) 
-                                             False 
-                                             obstaculos
+hayColisionConAlguna caja obstaculos = foldr compruebaColision False obstaculos
+  where 
+    compruebaColision :: Caja -> Bool -> Bool
+    compruebaColision obstaculo resto = solapan caja obstaculo || resto
 
 -- Usamos foldr y no foldl porque cuando usamos el operador (||), 
 -- si el resultado de la izquierda es True, no se evalúa la parte derecha 
 -- evitando así comprobaciones innecesarias.
 
 -- Cuenta cuántas celdas de todas las filas cumplen una condición.
-contarCeldasQueCumplen:: (Char -> Bool) -> [String] -> Int
-contarCeldasQueCumplen condicion filas = foldl (\total fila -> total + foldl (\n celda -> if condicion celda then n + 1 else n) 0 fila) 0 filas
+contarCeldasQueCumplen :: (Char -> Bool) -> [String] -> Int
+contarCeldasQueCumplen condicion filas = foldl sumarFila 0 filas
+  where
+    sumarFila :: Int -> String -> Int
+    sumarFila total fila = total + foldl (sumarCelda condicion) 0 fila
+
+    sumarCelda :: (Char -> Bool) -> Int -> Char -> Int
+    sumarCelda cond n celda
+      | cond celda = n + 1
+      | otherwise  = n
 
 -- Empleamos foldl porque vamos acumulando un número. Primero contamos las celdas de una fila 
 -- y sumamos ese resultado al total acumulado. No hace falta detener el recorrido antes de tiempo
