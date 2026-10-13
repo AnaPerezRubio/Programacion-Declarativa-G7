@@ -313,13 +313,13 @@ hayColisionConAlguna caja obstaculos = foldr compruebaColision False obstaculos
 -- evitando así comprobaciones innecesarias.
 
 -- Cuenta cuántas celdas de todas las filas cumplen una condición.
-contarCeldasQueCumplen :: (Char -> Bool) -> [String] -> Int
+contarCeldasQueCumplen :: (Celda -> Bool) -> Nivel -> Int
 contarCeldasQueCumplen condicion filas = foldl sumarFila 0 filas
   where
-    sumarFila :: Int -> String -> Int
+    sumarFila :: Int -> Fila -> Int
     sumarFila total fila = total + foldl (sumarCelda condicion) 0 fila
 
-    sumarCelda :: (Char -> Bool) -> Int -> Char -> Int
+    sumarCelda :: (Celda -> Bool) -> Int -> Celda -> Int
     sumarCelda cond n celda
       | cond celda = n + 1
       | otherwise  = n
