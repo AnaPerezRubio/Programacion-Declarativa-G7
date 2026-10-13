@@ -242,6 +242,7 @@ simularCaidaLibre n aceleracion estado = estado : simularCaidaLibre (n - 1) acel
 -- Recursión sobre dos listas a la vez
 --------------------------------------
 
+--  Combina los elementos de dos listas en parejas, emparejando los elementos de la misma posición.
 zipPropio :: [a] -> [b] -> [(a,b)]
 zipPropio _ [] = []
 zipPropio [] _ = []
@@ -251,6 +252,7 @@ zipPropio (x:xs) (y:ys) = (x,y) : zipPropio xs ys
 -- Recursión con descarte condicional: preparación de líneas
 --------------------------------------------------------------
 
+-- Comprueba si una cadena está vacía o comienza por el carácter ';'.
 esComentarioOVacia :: String -> Bool
 esComentarioOVacia cadena = null cadena || head cadena == ';'  
 
@@ -274,6 +276,7 @@ mapPropio :: (a -> b) -> [a] -> [b]
 mapPropio _ [] = []
 mapPropio f (x:xs) = f x : mapPropio f xs
 
+--  Devuelve los elementos de una lista que cumplen una condición.
 filterPropio :: (a -> Bool) -> [a] -> [a]
 filterPropio _ [] = []
 filterPropio p (x:xs)
