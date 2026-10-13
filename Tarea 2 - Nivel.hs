@@ -451,3 +451,80 @@ contarCeldasQueCumplen p = foldl sumarFila 0
     sumarSiCumple acum actual 
         | p actual   = acum + 1
         | otherwise  = acum
+
+--------------------------------------------
+
+-- PROPIEDADES CON QUICKCHECK
+
+-- Equivalencia de map y mapPropio
+-- Concretamos la función y el tipo de la lista para generar pruebas
+prop_mapPropio_equivale_map :: [Int] -> Bool
+prop_mapPropio_equivale_map xs = mapPropio (*2) xs == map (*2) xs
+
+{-
+*Main> quickCheck prop_mapPropio_equivale_map
++++ OK, passed 100 tests.
+prop_zipPropio_equivale_zip
+prop_simularCaidaLibre_longitud (propiedad condicional, usando ==> y restringida a
+n >= 0)
+prop_hayColisionConAlguna_lista_vacia: nunca hay colisión contra una lista vacía de
+obstáculo
+-}
+
+-- Equivalencia de filter y filterPropio
+-- Concretamos la función y el tipo de la lista para generar pruebas
+prop_filterPropio_equivale_filter :: [Int] -> Bool
+prop_filterPropio_equivale_filter xs = filterPropio (>0) xs == filter (>0) xs
+
+{-
+*Main> quickCheck prop_filterPropio_equivale_filter
++++ OK, passed 100 tests.
+-}
+
+-- Equivalencia de foldr y foldrPropio
+-- Concretamos el operador, el caso base y el tipo de la lista para generar pruebas
+prop_foldrPropio_equivale_foldr :: [Int] -> Bool
+prop_foldrPropio_equivale_foldr xs = foldrPropio (-) 0 xs == foldr (-) 0 xs
+
+{-
+*Main> quickCheck prop_foldrPropio_equivale_foldr
++++ OK, passed 100 tests.
+-}
+
+-- Equivalencia de foldl y foldlPropio
+-- Concretamos el operador, el acumulador inicial y el tipo de la lista para generar pruebas
+prop_foldlPropio_equivale_foldl :: [Int] -> Bool
+prop_foldlPropio_equivale_foldl xs = foldlPropio (-) 0 xs == foldl (-) 0 xs
+
+{-
+*Main> quickCheck prop_foldlPropio_equivale_foldl
++++ OK, passed 100 tests.
+-}
+
+-- Equivalencia de zip y zipPropio
+prop_zipPropio_equivale_zip :: (Eq a, Eq b) => [a] -> [b] -> Bool
+prop_zipPropio_equivale_zip xs ys = zipPropio xs ys == zip xs ys
+
+{-
+*Main> quickCheck prop_zipPropio_equivale_zip
++++ OK, passed 100 tests.
+-}
+
+-- Comprobar que la longitud del resultado de simularCaidaLibre es n+1
+prop_simularCaidaLibre_longitud :: Int -> Double -> Estado -> Property
+prop_simularCaidaLibre_longitud n g e = 
+    n >= 0 ==> length (simularCaidaLibre n g e) == n + 1
+
+{-
+*Main> quickCheck prop_simularCaidaLibre_longitud
++++ OK, passed 100 tests; 88 discarded.
+-}
+
+-- Comprueba que nunca hay colisión contra una lista vacía de obstáculos.
+prop_hayColisionConAlguna_lista_vacia :: Caja -> Bool
+prop_hayColisionConAlguna_lista_vacia x = not (hayColisionConAlguna x [])
+
+{-
+*Main> quickCheck prop_hayColisionConAlguna_lista_vacia
++++ OK, passed 100 tests.
+-}
