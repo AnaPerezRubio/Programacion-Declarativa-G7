@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 -- =============================================================
 -- Programación Declarativa - Tareas 1 y 2
 -- Versión consolidada del Grupo 7
@@ -526,4 +526,3 @@ parsearNiveles = traverse parsearNivelCompleto
 -- Bonus: todas las posiciones (fila, columna) de una rejilla rectangular, por filas (Applicative de listas)
 todasLasPosiciones :: Grid -> [(Int, Int)]
 todasLasPosiciones g = (,) <$> [0 .. length g - 1] <*> [0 .. length (concat (take 1 g)) - 1]
->>>>>>> jabemo
