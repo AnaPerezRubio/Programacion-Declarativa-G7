@@ -129,9 +129,9 @@ metasDesdeGrid grid =
 enemigosDesdeGrid :: Grid -> [Enemigo]
 enemigosDesdeGrid grid =
     [ Enemigo ident
-        (x + t/2, y + t/2)
+        (x + tamCelda/2, y + tamCelda/2)
         (-40, 0)
-        (t, t)
+        (tamCelda, tamCelda)
         Patrulla
     | (i, fila) <- zip [0..] grid
     , (j, InicioEnemigo ident) <- zip [0..] fila
@@ -139,7 +139,6 @@ enemigosDesdeGrid grid =
     ]
     where
         total = length grid
-        t = realToFrac tamCelda
 
 -- BONUS
 
