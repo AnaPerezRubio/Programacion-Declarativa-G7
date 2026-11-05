@@ -108,13 +108,12 @@ posicionCelda total i j =
 -- Convierte las celdas sólidas de un grid en plataformas.
 gridAPlataformas :: Grid -> [Plataforma]
 gridAPlataformas grid =
-    [ Plataforma (x, y, t, t)
+    [ Plataforma (x, y, tamCelda, tamCelda)
     | (i, fila) <- zip [0..] grid
     , (j, Solido) <- zip [0..] fila
     , let (x, y) = posicionCelda total i j ]
     where
         total = length grid
-        t = realToFrac tamCelda
 
 -- Convierte las celdas META de un grid en objetos Meta.
 metasDesdeGrid :: Grid -> [Meta]
