@@ -49,7 +49,7 @@ moverJugador dt j = j {posJugador = nuevaPos}
 -- Calcula el siguiente EstadoJuego
 estadoSiguiente :: Jugador -> Bool -> Bool  -> EstadoJuego
 estadoSiguiente j danyo meta
-      | vidas j <= 0 = Gameover
+      | vidas j <= 0 = GameOver
       | danyo        = PierdeVida
       | meta         = NivelCompletado
       | otherwise    = Jugando

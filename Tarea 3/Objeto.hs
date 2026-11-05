@@ -22,7 +22,7 @@ data Plataforma = Plataforma BoundingBox
 data Meta = Meta { posMeta :: Vector2D } 
   deriving (Eq, Show)
 
-data Enemigo = Enemigo {ident :: Char, posEnemigo :: Vector2D,
+data Enemigo = Enemigo {ident :: String, posEnemigo :: Vector2D,
                         velEnemigo :: Vector2D, dimE :: Vector2D,
                         tipo :: TipoEnemigo}
   deriving (Show, Eq)

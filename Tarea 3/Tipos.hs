@@ -12,13 +12,13 @@ module Tipos (
 type Vector2D = (Float, Float)
 type BoundingBox = (Float, Float, Float, Float)
 
-data Celda = Vacio | Solido | InicioEnemigo Char | META 
+data Celda = Vacio | Solido | InicioEnemigo String | META 
   deriving (Show, Read, Eq)
 type Grid = [[Celda]]
 
 data TipoEnemigo = Patrulla | Perseguidor 
   deriving (Show, Eq)
-data EstadoJuego = Jugando | PierdeVida | Gameover | NivelCompletado 
+data EstadoJuego = Jugando | PierdeVida | GameOver | NivelCompletado 
   deriving (Show, Eq)
 
 -- Suma componente a componente dos vectores/puntos 2D.
@@ -34,7 +34,7 @@ parsearCelda :: Char -> Celda
 parsearCelda '.' = Vacio
 parsearCelda '#' = Solido
 parsearCelda 'M' = META
-parsearCelda x   = InicioEnemigo x
+parsearCelda x   = InicioEnemigo [x]
 
 -- Convierte una lista de String en un Grid
 parsearGrid :: [String] -> Grid
@@ -42,10 +42,11 @@ parsearGrid = map (map parsearCelda)
 
 -- Convierte una Celda en un Char
 celdaAChar :: Celda -> Char
-celdaAChar Vacio             = '.'
-celdaAChar Solido            = '#'
-celdaAChar META              = 'M'
-celdaAChar (InicioEnemigo c) = c
+celdaAChar Vacio                 = '.'
+celdaAChar Solido                = '#'
+celdaAChar META                  = 'M'
+celdaAChar (InicioEnemigo (c:_)) = c
+celdaAChar (InicioEnemigo [])    = '.'
 
 -- Decide si una celda es solida.
 esSolido :: Celda -> Bool

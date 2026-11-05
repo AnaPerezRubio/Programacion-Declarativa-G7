@@ -61,20 +61,6 @@ mejoresPuntuaciones n xs = take n $ List.sortOn (Down . puntos) xs
 -- BONUS: 
 -- -------------------------------------------------------------
 
-{--- Convierte una lista de Strings en una Partida
-parsearPartida :: [String] -> Maybe Partida
-parsearPartida lineas = do
-  nivelLeido   <- buscarClave "NIVEL: " lineas
-  vidasLeidas  <- buscarClave "VIDAS: " lineas
-  puntosLeidos <- buscarClave "PUNTUACION: " lineas
-  
-  nivel <- readMaybe nivelLeido
-  vidas <- readMaybe vidasLeidas
-  pts   <- readMaybe puntosLeidos
-  
-  return (Partida nivel vidas pts)-}
-
-
 -- parsearPartidaA: usando <$>, <*>, >>=
 parsearPartidaA :: [String] -> Maybe Partida
 parsearPartidaA lineas = Partida <$> nivel <*> vidas <*> pts

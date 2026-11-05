@@ -30,7 +30,7 @@ dibujarHUD j = translate (-380) 270 (scale 0.15 0.15 (text mensaje))
 mensajeEstado :: EstadoJuego -> Maybe String
 mensajeEstado Jugando         = Nothing
 mensajeEstado PierdeVida      = Just "PIERDE VIDA (R para reiniciar)"
-mensajeEstado Gameover        = Just "GAME OVER"
+mensajeEstado GameOver        = Just "GAME OVER"
 mensajeEstado NivelCompletado = Just "NIVEL COMPLETADO" 
 
 -- Compone la escena, la cámara, el HUD y los mensajes de estado
