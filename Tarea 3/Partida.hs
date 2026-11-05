@@ -6,6 +6,8 @@ module Partida
     , parsearEntrada
     , parsearLeaderboard
     , mejoresPuntuaciones
+    , parsearPartidaA
+    , puntuacionTotal
     ) where
 
 

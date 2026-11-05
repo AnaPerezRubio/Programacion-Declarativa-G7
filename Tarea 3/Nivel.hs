@@ -11,6 +11,8 @@ module Nivel
     , gridAPlataformas
     , metasDesdeGrid
     , enemigosDesdeGrid
+    , parsearNiveles
+    , todasLasPosiciones
     ) where
 
 import Tipos
